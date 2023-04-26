@@ -1,26 +1,82 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-//include images into your bundle
-import rigoImage from "../../img/rigo-baby.jpg";
+const Todo = () => {
+    const [tareas, setTarea] = useState([]);
+    const deleteTarea = (i) => {
+        setTarea(
+            tareas.filter((value, index) => {
+                return index != i;
+            })
+        );
+    };
 
-//create your first component
-const Home = () => {
-	return (
-		<div className="text-center">
-			<h1 className="text-center mt-5">Hello Rigo!</h1>
-			<p>
-				<img src={rigoImage} />
-			</p>
-			<a href="#" className="btn btn-success">
-				If you see this green button... bootstrap is working...
-			</a>
-			<p>
-				Made by{" "}
-				<a href="http://www.4geeksacademy.com">4Geeks Academy</a>, with
-				love!
-			</p>
-		</div>
-	);
+    function putApi() {
+        var myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        var raw = JSON.stringify(tareas);
+
+        var requestOptions = {
+            method: "PUT",
+            headers: myHeaders,
+            body: raw,
+            redirect: "follow",
+        };
+
+        fetch(
+            "https://assets.breatheco.de/apis/fake/todos/user/maryzambrano",
+            requestOptions
+        )
+            .then((response) => response.text())
+            .then((result) => console.log(result))
+            .catch((error) => console.log("error", error));
+    }
+
+    useEffect(() => {
+        fetch("https://assets.breatheco.de/apis/fake/todos/user/maryzambrano")
+            .then((respuesta) => respuesta.json())
+            .then((data) => setTarea(data));
+    }, []);
+
+    useEffect(() => {
+        putApi();
+    }, [tareas])
+
+    return (
+        <div className="container">
+            <h1>Todo List</h1>
+            <input
+                placeholder="Escribe Tus Tareas Pendientes"
+                onKeyPress={(event) => {
+                    if (event.key == "Enter") {
+                        setTarea([...tareas, { label: event.target.value, done: false }]);
+                        event.target.value = "";
+                    }
+                }}
+            />
+
+            {tareas.map((value, index, i) => {
+                return (
+                    <div className="task-container d-flex">
+                        <div className="task-name" key={index}>
+                            {value.label}
+                        </div>
+                        <div className="button-container">
+                            <button
+                                className="delete-button"
+                                onClick={() => deleteTarea(index)}
+                            >
+                                X
+                            </button>
+                        </div>
+                    </div>
+                );
+            })}
+            <div className="left">
+        	    <p>Tienes {tareas.length} por Realizar.</p>
+    	    </div>
+        </div>
+    );
 };
 
-export default Home;
+export default Todo;
